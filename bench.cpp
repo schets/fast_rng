@@ -2,7 +2,7 @@
 #include <time.h>
 
 #include "xorshift.hpp"
-constexpr static size_t num_loop = 3e8;
+constexpr static size_t num_loop = 1e8;
 constexpr static int num_work = num_loop;
 using namespace std;
 
@@ -23,9 +23,7 @@ void seed_rn(seeder &rn) {
 //small loop to remove some cost of function call
 template<class rng>
 void __attribute__ ((noinline))  call_rn (rng &rn) {
-    for (size_t i = 0; i < 3; i++) {
-        rn.rand();
-    }
+    rn.rand();
 }
 
 template<class rng>
@@ -64,27 +62,25 @@ int main() {
     double lat_time;
 	uint64_t junk_val = 0;
 	junk_val += time_call([]() {
-		xorshift<uint16_t> rn;
+		xorshift<uint64_t> rn;
 		seed_rn(rn);
 		return grab_many(rn);
-
 	}, time);
 
 	cout << "The plain rng took " << time << " seconds, ";
     cout << (num_loop * 1.0/time) << " rngs per second " << endl << endl;
 
     junk_val += time_call([]() {
-        xorshift_bulk<uint64_t, 2> rn;
+        xorshift_bulk<uint16_t, 8> rn;
         seed_rn(rn);
         return grab_many(rn);
-
     }, time);
 
     cout << "The bulk rng took " << time << " seconds, ";
     cout << (num_work * 1.0/time) << " rngs per second " << endl;
 
      junk_val += time_call([]() {
-        xorshift_bulk<uint64_t, 2> rn;
+        xorshift_bulk<uint16_t, 8> rn;
         seed_rn(rn);
         heavy_work (rn);
     }, time);
@@ -94,10 +90,9 @@ int main() {
     cout << "and " << (1e9 * time / num_work) << "ns per refill" << endl << endl;
 
     junk_val += time_call([]() {
-        alignas(64) xorshift_sse2<uint64_t, 4> rn;
+        alignas(64) xorshift_sse2<uint16_t, 4> rn;
         seed_rn(rn);
         return grab_many(rn);
-
     }, time);
 
     cout << "The vector rng took " << time << " seconds, ";

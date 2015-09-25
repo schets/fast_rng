@@ -7,11 +7,13 @@
 #define likely(x)    __builtin_expect(!!(x), 1)
 #define unlikely(x)  __builtin_expect(!!(x), 0)
 
-//I suspect this generates some questionable code...
+//need to test using a 64 bit compiler
 template<class itype>
-static inline itype do_rng(itype &s0, itype &s1) {
+static inline itype do_rng(itype &s0, itype _s1) {
+    auto s1 = _s1;
     s1 ^= s1 << 23;
     s1 = (s1 ^ s0 ^ (s1 >> 17) ^ (s0 >> 26));
+    _s1 = s1;
     return s1 + s0;
 }
 
